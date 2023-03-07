@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  	<title>InventarioApp</title>
+	  <link rel="icon" type="image/x-icon" href="/images/ico1.png">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,700' rel='stylesheet' type='text/css'>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="css/spinner.css">
+
+	</head>
+	<body>
+	<section class="ftco-section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-6 text-center mb-5">
+					<h2 class="heading-section">Big Brain Project 🧠</h2>
+					<div id="checkInline">
+						<p class="bg-primary text-white">Proveedor</p>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
+							<label class="form-check-label" for="inlineRadio1"><span class="badge badge-info">HP</span></label>
+						</div>
+						<div class="form-check form-check-inline">
+							<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2">
+							<label class="form-check-label" for="inlineRadio2"><span class="badge badge-info">Acer</span></label>
+						</div>
+						<div class="form-check form-check-inline">
+								<input class="form-check-input " type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3" disabled>
+								<label class="form-check-label" for="inlineRadio2"><span class="badge badge-info">Lenovo(Disable)</span></label>
+						</div>
+					</div>
+					<form id="formulario">
+						<div class="form-group">
+							<label for="codigoLabel">Codigo de inventario</label>
+							<input type="text" class="form-control" id="inputCodigo" aria-describedby="emailHelp" placeholder="Ingrese el codigo" required>
+							<small id="emailHelp" class="form-text text-muted">Un project para el brain de un servidor a.k.a El nutty💦</small>
+						  </div>
+						  <button type="submit" id="btnsubmit"class="btn btn-success">Submit</button>
+						  <button type="button"  id="btnExport" class="btn btn-primary ">Export csv</button>
+					</form>
+					<div id="spinner" class="spinner d-none">
+						<div class="bounce1"></div>
+						<div class="bounce2"></div>
+						<div class="bounce3"></div>
+					  </div>
+				</div>
+
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="table-wrap">
+						<table class="table" id="tabla">
+						  <thead class="thead-primary">
+						    <tr>
+						      <th>Serial Number</th>
+						      <th>Product Number</th>
+						      <th>Product Name</th>
+						      <th>Action</th>
+						    </tr>
+						  </thead>
+						  <tbody>
+						  </tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<script src="js/jquery.min.js"></script>
+  <script src="js/popper.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/main.js"></script>
+
+	</body>
+</html>
+
