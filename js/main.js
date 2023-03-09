@@ -7,16 +7,16 @@
 	const btnExportar = document.querySelector('#btnExport');
 
 
-	let Lista = JSON.parse(localStorage.getItem('productos')) ?? [];
-
+	
 	let codigo;
+
 
 	const mostrarSpinner = ()  => {spinner.classList.remove("d-none")};
 	const ocultarSpinner = () => {spinner.classList.add("d-none")};
 
 	document.addEventListener('DOMContentLoaded', () => {
-		
 		cargarDatos();
+
 	});
 
 
@@ -36,18 +36,18 @@
 	formulario.addEventListener('submit',function (e) {
 				
 		e.preventDefault();
-		var selectedOption = document.querySelector('input[name="inlineRadioOptions"]:checked');
+		let selectedOption = document.querySelector('input[name="inlineRadioOptions"]:checked');
 		if(selectedOption === null){
 			imprimirAlerta('Seleccione el proveedor','error');
 			ocultarSpinner();
 			return;	
 		}
-		else if(selectedOption.value === "option1") {
+		else if(selectedOption.value === "HP") {
 			apiHp();
-		} else if (selectedOption.value === "option2") {
+		} else if (selectedOption.value === "Acer") {
 			apiAcer();
 		} else if (selectedOption.value === "option3") {
-		  console.log('Brain arregla la api');
+			apiLenovo();
 		}
 	});
 
@@ -57,68 +57,103 @@
 		  }
 	}
 
-	async function apiHp(e) {
+	const apiHp = async (e) => {
 		const url = `https://pro-psurf-app.glb.inc.hp.com/partsurferapi/Search/GenericSearch/${codigo}/country/US/usertype/EXT`;
-
+	
 		const response = await fetch(url, {
-			
-		headers: {
-			'Authorization': 'Basic MjAyMzEzNy1wYXJ0c3VyZmVyOlBTVVJGQCNQUk9E',
-		},
-		
+			headers: {
+				'Authorization': 'Basic MjAyMzEzNy1wYXJ0c3VyZmVyOlBTVVJGQCNQUk9E',
+			},
 		});
-		const text = await response.json()
-		.then(data=> {
-			ocultarSpinner()
-			if (existeStorage(data.Body.SerialNumberBOM.wwsnrsinput.serial_no)) {
-				imprimirAlerta('Ya existe un producto con ese código','error');
-				
-			}else{
-				agregarProducto(data.Body.SerialNumberBOM.wwsnrsinput);
+	
+		const data = await response.json();
+	
+		const datos = data.Body.SNRProductLists?.[0] ?? data.Body.SerialNumberBOM?.wwsnrsinput;
+	
+		ocultarSpinner();
+	
+		if (datos?.product_Desc || datos?.product_no) {
+			if (existeStorage(codigo || datos?.serial_no)) {
+				imprimirAlerta('Producto ya existe', 'error');
+				return;
+			}
+	
+			const { product_Desc, product_Id, serial_no, product_no, user_name } = datos;
+	
+			const plantilla = {
+				marca: 'HP',
+				serial_no: serial_no || codigo,
+				product_no: product_no || product_Id,
+				user_name: product_Desc || user_name
 			};
-			
-		})
-		.catch(error => imprimirAlerta("No se encontro el producto",'error')+ console.log(error));	
-			
+	
+			agregarProducto(plantilla);
+		} else {
+			imprimirAlerta('No se encontró el producto', 'error');
+			formulario.reset();
+		}
 	};
+			
 
-	async function apiAcer(e) {
 
+	const apiAcer = async (e) => {
 		const urla = `https://www.acer.com/ee-en/api/support/find/03/${codigo}`;
-
-		const response = await fetch(urla).then(response => response.json())
-				.then(data => {
-					const {url} = data;
-					dataApi = url.replace("?search=", "").split(";");
-					let resultArray = [dataApi[0], dataApi[1], dataApi[2].replace(/&filter=global_download/g, "")];
-					const plantilla = 
-					{product_no : resultArray[0],
-					 serial_no : resultArray[1],
-					 user_name : resultArray[2]
-					};
-					ocultarSpinner();
-					if (existeStorage(plantilla.serial_no)) {
-						imprimirAlerta('Ya existe un producto con ese código','error');
-						
-					}else{
-						agregarProducto(plantilla);
-					};
-
-				}
-				).catch(err => {console.log(err)});
-
-
+	
+		try {
+			const response = await fetch(urla);
+			const { url } = await response.json();
+			ocultarSpinner();
+	
+			const dataApi = url.replace("?search=", "").split(";");
+			const [serial_no, product_no, user_name] = [
+				dataApi[0],
+				dataApi[1],
+				dataApi[2].replace(/&filter=global_download/g, "")
+			];
+	
+			const plantilla = {
+				marca: 'Acer',
+				serial_no,
+				product_no,
+				user_name
+			};
+	
+			if (existeStorage(plantilla.serial_no)) {
+				imprimirAlerta('Ya existe un producto con ese código', 'error');
+			} else {
+				marca = 'Acer';
+				agregarProducto(plantilla);
+			}
+		} catch (err) {
+			imprimirAlerta("No se encontró el producto", 'error');
+			console.log(err);
+			formulario.reset();
+		}
 	};
 	//Bajo pruebas
-	async function apiLenovo(e) {
-			e.preventDefault();
+	 function apiLenovo(e) {
+
+		fetch("https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=1S4004H1UMJ65PR8", {
+			"referrerPolicy": "no-referrer",
+			"body": null,
+			"method": "GET",
+			"origin": "*",
+			"mode": "no-cors",
+			"credentials": "include"
+				}).then(response => console.log(response.json()))
 			
-		const url = `https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=${codigo}`;
-		fetch(url, { mode: 'no-cors' })
-		  .then(response => response.json())
-		  .then(data => console.log(data))
-		  .catch(error => console.log(error));
-	}
+
+
+
+
+		// const url = `https://pcsupport.lenovo.com/us/en/api/v4/mse/getproducts?productId=${codigo}`;
+		// fetch(url, { mode: 'no-cors' })
+		//   .then(response => response.json())
+		//   .then(data => console.log(data,'wenas'))
+		//   .catch(error => console.log(error) + ocultarSpinner());
+		  
+
+	};
 
 
 	function imprimirAlerta(mensaje, tipo) {
@@ -149,43 +184,38 @@
 	};
 
 
-    function existeStorage(id) {    
-        const productos = JSON.parse(localStorage.getItem('productos')) ?? [];
-        return productos.some(producto => producto.serial_no === id);
-        
-    };
+	const existeStorage = id => JSON.parse(localStorage.getItem('productos') || '[]').some(producto => producto.serial_no === id);
+
    
-   function cargarDatos() {
-		Lista = JSON.parse(localStorage.getItem('productos'))?? [];
-		console.log(Lista);
+	const cargarDatos = () => {
+		const Lista = JSON.parse(localStorage.getItem('productos') || '[]');
 		limpiarHTML(tbody);
 		Lista.forEach(data => {
-			const {product_no,serial_no,user_name} = data;					
+			const {product_no,serial_no,user_name,marca} = data;
 			const HTML = `
+				<td>${marca}</td>
 				<td>${serial_no}</td>
 				<td>${product_no}</td>
 				<td>${user_name}</td>
-				<td><button type="button" id="btndelete" class="btn btn-danger">Delete</button></td>
+				<td><button type="button" id="btndelete" class="btn btn-danger btn-sm">Delete</button></td>
 			`;
-			
-			var tr = document.createElement("tr");
-
+	
+			const tr = document.createElement("tr");
 			tr.innerHTML = HTML;
 			tbody.appendChild(tr);
+	
 			const btnDelete = tr.querySelector("#btndelete");
-			btnDelete.addEventListener("click", function(e){
-				eliminarProducto(product_no);
-			});			
-			
+			btnDelete.addEventListener("click", () => eliminarProducto(product_no));
 		});
-	 };
+	};
+	
   
    function agregarProducto(producto) 
-   {
+   {	
+		let Lista = JSON.parse(localStorage.getItem('productos') || '[]');
 		localStorage.setItem('productos', JSON.stringify([...Lista, producto]));
 		formulario.reset();
 		imprimirAlerta('Articulo Agregado!');
-		console.log(Lista);
 		cargarDatos();
 
 	};
